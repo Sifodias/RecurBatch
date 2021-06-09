@@ -31,14 +31,11 @@ def recDir(cmd, input):
             exec = cmd
             exec = exec.replace('#1', '\"' + obj.path + '\"')
             exec = exec.replace('#2', '\"' + os.getcwd() + '/' + obj.name + '\"')
-        
             jobs.put(exec)
             
-
         else:
             os.makedirs("./" + obj.name, exist_ok=True)
             os.chdir("./" + obj.name)
-        
             recDir(cmd, input + obj.name + "/")
             os.chdir("..")
 
@@ -68,13 +65,18 @@ def main():
         worker.start()
         pool.append(worker)
 
-    os.makedirs(args.output, exist_ok=True)
-    os.chdir(args.output)
-    recDir(args.cmd, args.input)
+    try:
+        os.makedirs(args.output, exist_ok=True)
+        os.chdir(args.output)
+        recDir(args.cmd, args.input)
+        jobs.join()
 
-    jobs.join()
+    except KeyboardInterrupt:
+        jobs.close()
+    
     for w in pool:
         w.terminate()
+
         
 if __name__=="__main__":
     main()
